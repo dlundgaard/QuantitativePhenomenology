@@ -6,4 +6,8 @@
 !categories.empath
 !requirements.txt
 !minimal.mplstyle
+!paper/
+paper/*
+!paper/*.typ
+paper/asssets
 !README.md
