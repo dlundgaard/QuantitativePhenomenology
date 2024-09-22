@@ -1,5 +1,6 @@
 #set page(
   margin: (x: 3cm, y: 5cm),
+  footer-descent: 40%,
 )
 
 #align(center, text(1.9em)[
@@ -8,7 +9,7 @@
 ])
 #v(0.4em)
 #align(center, text(size: 1.2em)[
-  #datetime(year: 2024, month: 12, day: 9).display("[day padding:none] [month repr:long] [year]")
+  #datetime(year: 2025, month: 01, day: 7).display("[day padding:none] [month repr:long] [year]")
 ])
 #v(2.4em)
 #grid(

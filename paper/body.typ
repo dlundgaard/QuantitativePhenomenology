@@ -1,5 +1,6 @@
 #set page(
-    margin: (x: 3.3cm, y: 3.3cm),
+    margin: (x: 3.6cm, y: 3cm),
+    footer-descent: 50%,
 )
 
 = Introduction
@@ -12,6 +13,11 @@ This was shown by #cite(<zamberlanVarietiesPsychedelicExperience2018>, form: "pr
 #math.equation(
   block: true,
   $e^(i pi) + 1 = 0$
+)
+Which brings us to the following expression for a GLM (generalized linear model) where a transformation of the outcome variable, performed by the _link_ function, is explained by a linear combination of predictors.
+#math.equation(
+  block: true,
+  $f#sub[link] [E(Y#sub[i] | x#sub[i])] = sum_(k=0)^n beta#sub[n] x#sub[kn] + epsilon#sub[i]$
 )
 #lorem(80)
 

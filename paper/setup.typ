@@ -1,10 +1,10 @@
 #let setup(doc, paper_texture: false) = {
   set page(
     paper: "a4",
-    // background: image("assets/texture3_semi.jpg", width: 100%, height: 100%),
+    margin: (x: 3.3cm, y: 3.3cm),
     background: if paper_texture [ #image("assets/texture3_semi.jpg", width: 100%, height: 100%) ] else [ #none ],
     numbering: "1 of 1",
-    footer-descent: 40%,
+    footer-descent: 50%,
     footer: 
       context {
         if counter(page).get().first() > 1 [
@@ -53,23 +53,19 @@
     style: "american-psychological-association",
   )
 
-  show heading: set block(above: 2em, below: 1.4em)
+  show heading: set block(above: 1.6em, below: 0.8em)
   show figure: set block(
     width: 100%,
     radius: 1.6%,
-    inset: (top: 0.6em, bottom: 1.6em), 
+    inset: (top: 0.6em, bottom: 1.2em), 
     stroke: color.luma(200) + 0.6pt,
   )
   show figure.caption: caption => [
     #align(left)[#text(size: 9pt)[
-      #text(weight: "bold")[#"     "#caption.supplement #caption.counter.display(caption.numbering)#caption.separator]
+      #text(weight: "bold")[#"    "#caption.supplement #caption.counter.display(caption.numbering)#caption.separator]
       #caption.body
     ]]
   ]
-
-  set page(
-    margin: (x: 3.3cm, y: 3.3cm),
-  )
 
   doc
 }
