@@ -58,7 +58,7 @@
     width: 100%,
     radius: 1.6%,
     inset: (top: 0.6em, bottom: 1.2em), 
-    stroke: color.luma(200) + 0.6pt,
+    stroke: (right: color.luma(100) + 0.6pt, bottom: color.luma(200) + 0.6pt),
   )
   show figure.caption: caption => [
     #align(left)[#text(size: 9pt)[

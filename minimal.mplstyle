@@ -12,9 +12,11 @@ figure.constrained_layout.use: True
 xtick.color: 353535
 xtick.major.width: 0.6
 xtick.minor.width: 0.4
+xtick.direction: "in"
 ytick.color: 353535
 ytick.major.width: 0.6
 ytick.minor.width: 0.4
+ytick.direction: "in"
 axes.titlepad: 10
 axes.labelpad: 10
 axes.labelcolor: 545454
