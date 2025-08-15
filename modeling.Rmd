@@ -1,0 +1,186 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "Quantitative Phenomenology")
+
+install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+library(cmdstanr)
+install_cmdstan()
+
+library(tidyverse)
+library(brms)
+library(tidybayes)
+library(bayesplot)
+library(mice)
+# library(rstanarm)
+
+theme_set(
+  theme_minimal() +
+  theme(
+    plot.margin = margin(0, 0, 0, 0),
+    plot.caption.position = "plot",
+    axis.title = element_text(size = 8, color = "#555555"),
+    axis.title.x = element_text(margin = margin(t = 15, b = 5)),
+    axis.title.y = element_text(margin = margin(r = 0, l = 5), angle = 0, vjust = 0.98, hjust = 0.5),
+    panel.grid.minor = element_line(color = "#eeeeee"),
+    panel.grid.major.x = element_blank(),
+    axis.line = element_line(color="#222222", linewidth = 0.2),
+    axis.ticks = element_line(color = "#222222", linewidth = 0.2),
+    axis.ticks.length = unit(4, "pt")
+  )
+)
+```
+
+```{r}
+substance_selection = c("MDMA", "Ketamine", "LSD", "Psilocybin", "DMT")
+data <- read_csv("data/database_processed.csv") %>% 
+  subset(substance %in% substance_selection) %>% 
+  mutate(
+    substance = factor(substance, levels = substance_selection),
+    # author = factor(na_if(author, -1)),
+    sex = factor(sex),
+  )
+
+data
+```
+
+```{r}
+completed <- complete(mice(data, m = 1, method = "pmm")) %>% 
+  mutate(
+    age_at_experience_centered = age_at_experience - mean(age_at_experience)
+  )
+completed
+```
+
+```{r}
+# fit <- brm(
+#   formula = bf(OBN ~ 0 + substance + sex + age_at_experience + (1 | author)) + set_rescor(FALSE),
+#   family = gaussian(),
+#   # prior = c(
+#   #   prior_string("normal(0, 2.5)", class = "Intercept", dpar = contrast_categories),
+#   #   prior_string("normal(0, 0.01)", class = "b", coef = "Individualism", dpar = contrast_categories)
+#   # ),
+#   data = data,
+#   backend = "cmdstanr",
+#   iter = 2000,
+#   warmup = 1000,
+#   refresh = 0,
+#   chains = 4,
+#   cores = 4,
+# )
+# save(fit, file="data/fit.Rda")
+# load("data/fit.Rda")
+
+# summary(fit, 1)
+
+# mcmc_areas(fit, regex_pars = "substance.*", prob = 0.89)
+
+# pp_check(fit, ndraw = 10, type = "dens_overlay_grouped", group = "substance") +
+  # scale_x_continuous(limits = c(0, 1)) +
+  # labs(title = str_interp("Posterior Predictive Checks (${'OBN'})"), x = "Cosine Similarity")
+```
+
+```{r}
+# draws %>%
+# ggplot(aes(y = factor(.variable, levels = substance_selection), x = .value)) +
+# stat_halfeye() +
+# labs(title = "Parameter Estimates", x = "Cosine Similarity", y = "")
+```
+
+```{r}
+fit <- brm(
+  formula = (
+    bf(OBN ~ 0 + substance + sex + age_at_experience + (1 | author)) +
+    bf(AED ~ 0 + substance + sex + age_at_experience + (1 | author)) +
+    bf(VIR ~ 0 + substance + sex + age_at_experience + (1 | author))
+  ) + set_rescor(TRUE),
+  family = gaussian,
+  # data = data,
+  data = completed,
+  backend = "cmdstanr",
+  cores = 4,
+  iter = 2000,
+  warmup = 1000,
+  chains = 4,
+  # iter = 1000,
+  # warmup = 500,
+  # chains = 1,
+  # refresh = 0,
+)
+summary(fit, 2)
+
+fit %>% 
+  gather_draws(`.*_substance.*`, regex = TRUE) %>% 
+  mutate(.variable = str_sub(.variable, start = 3, -1)) %>% 
+  separate_wider_delim(.variable, delim = "_substance", names = c("dimension", "substance")) %>% 
+  rename(sample = .value) %>%
+  write.table("data/model_fit.csv", sep = ",")
+```
+
+```{r}
+# save(fit, file="data/model_fit.Rda")
+load(file="data/model_fit.Rda")
+```
+
+```{r fig.height = 16}
+# library(kableExtra)
+# library(broom.mixed)
+# library(gt)
+
+# post <- posterior_summary(fit)
+# post <- tidy(fit, effects = "fixed", conf.int = 0.89)
+
+model_summary <- post %>%
+  rename(
+    Dimension = response,
+    Term = term,
+    Estimate = estimate,
+    `Std. Error` = std.error,
+    # `89% CI Lower` = conf.low,
+    # `89% CI Upper` = conf.high
+  ) %>% 
+  mutate(
+    `89% Cred. Int.` = paste("[ ", round(conf.low, 3), ", ", round(conf.high, 3), " ]", sep = "")
+  ) %>% 
+  select(Dimension, Term, Estimate, `89% Cred. Int.`) 
+
+model_summary %>% 
+  kable(format = "html", digits = 3, booktabs = TRUE) %>%
+  column_spec(1, bold = TRUE) %>% 
+  collapse_rows(columns = 1:2, valign = "top") %>% 
+  kable_styling(full_width = FALSE, position = "center") 
+
+model_summary %>% mutate(across(where(is.numeric), formatC, format = "f", digits = 3)) %>% write.table("assets/model_summary.csv", sep = ",", row.names = FALSE, col.names = FALSE)
+```
+
+```{r}
+all_draws <- tibble()
+for (focused_dimension in c("OBN", "AED", "VIR")) {
+  print(focused_dimension)
+  
+  data$focused_dimension <- pull(data, focused_dimension)
+  fit <- brm(
+    formula = bf(focused_dimension ~ 0 + substance + sex + age_at_experience + years_since_experience + (1 | author)),
+    family = gaussian,
+    data = data,
+    backend = "cmdstanr",
+    iter = 2000,
+    warmup = 100,
+    refresh = 0,
+    chains = 4,
+    cores = 4,
+  )
+  print(summary(fit, 2))
+  
+  draws <- fit %>%
+    gather_draws(`b_substance.*`, regex = TRUE) %>% 
+    mutate(
+      .variable = str_sub(.variable, start = 12, -1),
+      dimension = focused_dimension
+    ) %>% 
+    rename(substance = .variable, sample = .value)
+  
+  all_draws <- bind_rows(all_draws, draws)
+}
+
+write.table(all_draws, "data/model_fit.csv", sep = ",")
+```

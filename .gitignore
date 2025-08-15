@@ -7,5 +7,7 @@
 !scraper.ipynb
 !workbook.ipynb
 !README.md
+!code
+!code/*
 paper/*
 !paper/paper.pdf
