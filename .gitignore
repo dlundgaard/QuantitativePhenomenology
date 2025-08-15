@@ -2,11 +2,13 @@
 !.gitignore
 !requirements.txt
 !theme.mplstyle
+!substances.csv
+!scraper.ipynb
 !embedder.py
 !modeling.Rmd
-!scraper.ipynb
 !workbook.ipynb
 !README.md
-!paper/
-paper/*
-!paper/paper.pdf
+!data
+!paper
+!paper/*
+paper/assets/*
