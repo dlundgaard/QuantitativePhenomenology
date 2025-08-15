@@ -7,7 +7,8 @@
 !scraper.ipynb
 !workbook.ipynb
 !README.md
-!code
+!code/
 !code/*
+!paper/
 paper/*
 !paper/paper.pdf
