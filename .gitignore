@@ -1,14 +1,9 @@
 /*
 !.gitignore
-!requirements.txt
-!theme.mplstyle
-!substances.csv
-!scraper.ipynb
-!embedder.py
-!modeling.Rmd
-!workbook.ipynb
 !README.md
 !data
+!analysis
+!analysis/*
 !paper
 !paper/*
 paper/assets/*
